@@ -1,0 +1,895 @@
+{
+	"info": {
+		"_postman_id": "ddd48ae9-1556-4a74-a298-c1aa40b3205e",
+		"name": "To-do List Tests",
+		"description": "To-do List Tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "User related requests",
+			"item": [
+				{
+					"name": "Registering one new user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a9fdaee0-4c87-42b5-9ae0-5b76e623c66d",
+								"exec": [
+									"// we get random email value after this request \r",
+									"// we need to extract that random email into {{userEmail}} variable \r",
+									"var jsonData = pm.response.json();\r",
+									"//console.log(jsonData.user.email);\r",
+									"pm.environment.set(\"userEmail\",jsonData.user.email);\r",
+									"pm.environment.set(\"useRegistrationToken\", jsonData.token);\r",
+									"pm.environment.set(\"userId\", jsonData.user._id);\r",
+									"\r",
+									"//Test Cases (from SNIPPETS select \"Status code: code is 200\")\r",
+									"// we are interested in Test Resutls\r",
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Body matches string\", function () {\r",
+									"    pm.expect(pm.response.text()).to.include(\"string_you_want_to_search\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t\"name\": \"{{$randomFirstName}} {{$randomLastName}}\",\r\n\t\"email\": \"{{$randomEmail}}\",\r\n\t\"password\": \"frenchfries!\",\r\n\t\"age\": 27\r\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/user/register",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"user",
+								"register"
+							]
+						},
+						"description": "Registering one new user"
+					},
+					"response": []
+				},
+				{
+					"name": "Login as a User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "ec7aa523-36c4-416a-9de3-11efd653a4b8",
+								"exec": [
+									"var jsonData = pm.response.json();\r",
+									"//console.log(\"Here is what we got in our response for token\")\r",
+									"//console.log(jsonData.token);\r",
+									"pm.environment.set(\"userSessionToken\", jsonData.token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t\"email\": \"{{userEmail}}\",\r\n\t\"password\": \"{{userPass}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/user/login",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"user",
+								"login"
+							]
+						},
+						"description": "Login as a User"
+					},
+					"response": []
+				},
+				{
+					"name": "Get user info currently logged in User via Token",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{userSessionToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/user/me",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"user",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Logout a user currently in session ",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "26c0bdcf-42e3-4244-9b09-8092dd5f4e52",
+								"exec": [
+									"pm.test(\"Body is correct\", function () {\r",
+									"    pm.response.to.have.body(\"\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{userSessionToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/ecmascript"
+							},
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t\"email\": \"muh.nurali43@gmail.com\",\r\n\t\"password\": \"12345678\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/user/logout",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"user",
+								"logout"
+							]
+						},
+						"description": "Logout a user currently in session "
+					},
+					"response": []
+				},
+				{
+					"name": "Update a user profile information",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "6191454e-9687-4e5e-9bfc-35e69dc53ef1",
+								"exec": [
+									"console.log(\"user registration token\");\r",
+									"\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Body matches string\", function () {\r",
+									"    pm.expect(pm.response.text()).to.include(\"34\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{useRegistrationToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"age\": 34\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/user/me",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"user",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "User Changes profile picture ",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "e9368585-822f-4249-b057-0eaca007fe5e",
+								"exec": [
+									"// we get random email value after this request \r",
+									"// we need to extract that random email into {{userEmail}} variable \r",
+									"pm.environment.set(\"userEmail\", )"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{useRegistrationToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "avatar",
+									"type": "file",
+									"src": "/C:/Users/MMH/Pictures/avatar.png"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}/user/me/avatar",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"user",
+								"me",
+								"avatar"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get user's profile picture ",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "7a52ab7b-e64f-4261-972b-7e23bfb3e3bd",
+								"exec": [
+									"console.log(\"Get user profile picture\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/user/{{userId}}/avatar",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"user",
+								"{{userId}}",
+								"avatar"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete user profile picture",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{useRegistrationToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/user/me/avatar",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"user",
+								"me",
+								"avatar"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete one Registered user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{useRegistrationToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/user/me",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"user",
+								"me"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "User related requests",
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Task related requests",
+			"item": [
+				{
+					"name": "Registering new user for task",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "27e6a3cb-12c1-4f94-92c4-8d6cd6b534bb",
+								"exec": [
+									"\r",
+									"var jsonData = pm.response.json();\r",
+									"pm.environment.set(\"taskID\", jsonData.token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t\"name\": \"{{$randomFirstName}} {{$randomLastName}}\",\r\n\t\"email\": \"{{$randomEmail}}\",\r\n\t\"password\": \"frenchfries!\",\r\n\t\"age\": 27\r\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/user/register",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"user",
+								"register"
+							]
+						},
+						"description": "Registering one new user"
+					},
+					"response": []
+				},
+				{
+					"name": "Login as a User task",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "cb6c5e8c-9ca6-4dfa-bd55-f063356f2852",
+								"exec": [
+									"var jsonData = pm.response.json();\r",
+									"//console.log(\"Here is what we got in our response for token\")\r",
+									"//console.log(jsonData.token);\r",
+									"pm.environment.set(\"userSessionToken\", jsonData.token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t\"email\": \"{{userEmail}}\",\r\n\t\"password\": \"{{userPass}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/user/login",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"user",
+								"login"
+							]
+						},
+						"description": "Login as a User"
+					},
+					"response": []
+				},
+				{
+					"name": "Add a single to-do task",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a985e95f-7d08-4a8d-b0ff-53206d5e1fd8",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{useRegistrationToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t\"description\": \"driving a car\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseURL}}/task",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"task"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Task of a user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1473be02-6d63-427a-8aff-e856b8ee455d",
+								"exec": [
+									"// grab the JSon data from the response body \r",
+									"var jasonData = pm.response.json();\r",
+									"// you target the data you want\r",
+									"jsonData.data[0]._id;\r",
+									"// Set the extracted ID value to our varible in environment \r",
+									"pm.environment.set(\"taskID\", )"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{useRegistrationToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/task",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"task"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get one task information by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}",
+							"host": [
+								"{{baseURL}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Task by ID",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{useRegistrationToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t\"completed\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/task/",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"task",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update one existing request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "73f6d70d-d7a3-4e13-9aea-deb9aa9090ac",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Your test name\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.value).to.eql(true);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{useRegistrationToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/task{{taskID}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"task{{taskID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a task with completed status",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{useRegistrationToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{baseURL}}/task?completed=true&nijat=pass&josh=7",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"task"
+							],
+							"query": [
+								{
+									"key": "completed",
+									"value": "true"
+								},
+								{
+									"key": "nijat",
+									"value": "pass"
+								},
+								{
+									"key": "josh",
+									"value": "7"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get tasks of user that is not completed",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a Task by Pagination",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{useRegistrationToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/task?limit=2",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"task"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete a task by ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/task/{{taskID}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"task",
+								"{{taskID}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	],
+	"protocolProfileBehavior": {}
+}
